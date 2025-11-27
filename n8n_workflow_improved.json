@@ -1,0 +1,129 @@
+{
+  "name": "RAG Chatbot with n8n - Improved",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "chat-trigger-node",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [300, 300],
+      "webhookId": "rag-chat-webhook-improved"
+    },
+    {
+      "parameters": {
+        "content": "## 💬 RAG Chatbot\n\nAsk me anything about the documents!\n\n**Try asking:**\n- Who is Alice?\n- What happens in the story?\n- Tell me about the characters\n\n**Features:**\n✅ Retrieval Augmented Generation\n✅ Source citations\n✅ Conversational responses",
+        "height": 280,
+        "width": 300
+      },
+      "id": "sticky-note",
+      "name": "Instructions",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [60, 200]
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful AI assistant with access to a document knowledge base. Be conversational, friendly, and provide accurate information based on the retrieved context. If you don't have enough information, be honest about it."
+        }
+      },
+      "id": "ai-agent-node",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "id": "openai-model-node",
+      "name": "OpenAI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [500, 500],
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "=cd {{ $env.RAG_PROJECT_PATH || '/path/to/your/project' }} && {{ $env.PYTHON_PATH || 'python' }} query_data_improved.py \"{{ $('When chat message received').item.json.chatInput }}\""
+      },
+      "id": "execute-command-node",
+      "name": "Query RAG Pipeline",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Python RAG output with improved error handling\nconst stdout = $input.first().json.stdout || '';\nconst stderr = $input.first().json.stderr || '';\nconst exitCode = $input.first().json.exitCode || 0;\n\n// Handle errors\nif (exitCode !== 0 || stderr) {\n  let errorMessage = 'Sorry, I encountered an error processing your question.';\n  \n  if (stderr.includes('OPENAI_API_KEY')) {\n    errorMessage = '🔑 OpenAI API key is missing. Please configure your environment variables.';\n  } else if (stderr.includes('Database not found')) {\n    errorMessage = '📚 Database not found. Please run create_database.py first to index your documents.';\n  } else if (stderr.includes('Error -')) {\n    // Extract custom error message\n    const match = stderr.match(/Error - (.+)/);\n    if (match) {\n      errorMessage = `⚠️ ${match[1]}`;\n    }\n  }\n  \n  return [{\n    json: {\n      output: errorMessage,\n      error: true,\n      stderr: stderr\n    }\n  }];\n}\n\n// Extract Response and Sources\nlet response = '';\nlet sources = [];\n\nconst lines = stdout.split('\\n');\nfor (const line of lines) {\n  if (line.startsWith('Response:')) {\n    response = line.replace('Response:', '').trim();\n  } else if (line.startsWith('Sources:')) {\n    try {\n      const sourcesStr = line.replace('Sources:', '').trim();\n      sources = JSON.parse(sourcesStr);\n    } catch (e) {\n      // Fallback if JSON parsing fails\n      sources = [];\n    }\n  }\n}\n\n// Format output with sources\nlet output = response || 'No response generated';\n\nif (sources.length > 0 && Array.isArray(sources)) {\n  output += '\\n\\n📚 **Sources:**\\n';\n  sources.forEach((src, idx) => {\n    const fileName = src.file ? src.file.split('/').pop() : 'Unknown';\n    const confidence = src.score ? ` (confidence: ${(src.score * 100).toFixed(0)}%)` : '';\n    output += `${idx + 1}. ${fileName}${confidence}\\n`;\n  });\n}\n\nreturn [{\n  json: {\n    output: output,\n    raw_response: response,\n    sources: sources,\n    error: false\n  }\n}];"
+      },
+      "id": "parse-output-node",
+      "name": "Parse Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "content": "## 🔧 Configuration\n\n**Required Environment Variables:**\n- RAG_PROJECT_PATH: Path to your project\n- PYTHON_PATH: Path to Python (default: python)\n\n**In Execute Command node, update:**\n- Working directory path\n- Python command if needed\n\n**Don't forget to:**\n1. Add OpenAI credentials\n2. Run create_database.py first\n3. Test each node individually",
+        "height": 280,
+        "width": 320
+      },
+      "id": "config-note",
+      "name": "Configuration Notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [700, 520]
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [[{
+        "node": "AI Agent",
+        "type": "main",
+        "index": 0
+      }]]
+    },
+    "AI Agent": {
+      "main": [[{
+        "node": "Query RAG Pipeline",
+        "type": "main",
+        "index": 0
+      }]]
+    },
+    "OpenAI Model": {
+      "ai_languageModel": [[{
+        "node": "AI Agent",
+        "type": "ai_languageModel",
+        "index": 0
+      }]]
+    },
+    "Query RAG Pipeline": {
+      "main": [[{
+        "node": "Parse Output",
+        "type": "main",
+        "index": 0
+      }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}
+
