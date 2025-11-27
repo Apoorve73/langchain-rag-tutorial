@@ -1,47 +1,122 @@
-# Langchain RAG Tutorial
+# 🚀 n8n + RAG Lightning Learning Path
 
-## Install dependencies
+**Learn n8n workflows and RAG pipelines in just 1 hour!**
 
-1. Do the following before installing the dependencies found in `requirements.txt` file because of current challenges installing `onnxruntime` through `pip install onnxruntime`. 
+This project has been transformed from a basic RAG tutorial into a comprehensive learning experience that teaches you how to build professional AI chatbots using n8n automation and vector search.
 
-    - For MacOS users, a workaround is to first install `onnxruntime` dependency for `chromadb` using:
+## 🎯 What You'll Learn
 
-    ```python
-     conda install onnxruntime -c conda-forge
-    ```
-    See this [thread](https://github.com/microsoft/onnxruntime/issues/11037) for additonal help if needed. 
+- **n8n Workflow Automation**: Build AI-powered workflows
+- **RAG Systems**: Implement retrieval-augmented generation
+- **Conversational AI**: Add memory and context awareness
+- **Professional UX**: Create streaming chat interfaces
 
-     - For Windows users, follow the guide [here](https://github.com/bycloudai/InstallVSBuildToolsWindows?tab=readme-ov-file) to install the Microsoft C++ Build Tools. Be sure to follow through to the last step to set the enviroment variable path.
+## 🚀 Quick Start (1 Hour Learning Path)
 
-
-2. Now run this command to install dependenies in the `requirements.txt` file. 
-
-```python
-pip install -r requirements.txt
+**Option 1: Automated Setup**
+```bash
+python setup.py
 ```
 
-3. Install markdown depenendies with: 
+**Option 2: Manual Setup**
+See [README_LEARNING.md](README_LEARNING.md) for the complete step-by-step guide.
 
-```python
+## 📁 Project Structure
+
+```
+├── README_LEARNING.md     # 🚀 1-hour learning guide
+├── setup.py              # Automated setup script
+├── main.py               # Basic RAG API wrapper
+├── enhanced_rag.py       # RAG with conversation memory
+├── streaming_rag.py      # Streaming responses
+├── workflows/            # n8n workflow templates
+│   ├── basic_rag.json
+│   └── professional_chat.json
+├── tests/               # Test suite
+└── data/books/          # Knowledge base
+    └── alice_in_wonderland.md
+```
+
+## 🛠️ Tech Stack
+
+- **n8n**: Workflow automation platform
+- **LangChain**: RAG framework
+- **ChromaDB**: Vector database
+- **OpenAI**: Language models
+- **Python**: Backend scripting
+
+## 📚 Learning Phases
+
+### Phase 1: Foundation (15 min)
+- Environment setup
+- Basic RAG system
+- n8n installation
+
+### Phase 2: Integration (15 min)
+- n8n workflow creation
+- API communication
+- Basic chatbot
+
+### Phase 3: Enhancement (15 min)
+- Conversation memory
+- Context awareness
+- Advanced RAG features
+
+### Phase 4: Professional (15 min)
+- Streaming responses
+- Rich formatting
+- Production-ready interface
+
+## 🧪 Testing
+
+Run the test suite:
+```bash
+python -m pytest tests/ -v
+# or
+python tests/test_rag.py
+```
+
+## 🔧 Manual Setup (Alternative)
+
+### Install Dependencies
+
+**MacOS (with onnxruntime workaround):**
+```bash
+conda install onnxruntime -c conda-forge
+pip install -r requirements.txt
 pip install "unstructured[md]"
 ```
 
-## Create database
+**Windows:**
+Follow the [C++ Build Tools guide](https://github.com/bycloudai/InstallVSBuildToolsWindows) first.
 
-Create the Chroma DB.
-
-```python
+### Create Database
+```bash
 python create_database.py
 ```
 
-## Query the database
-
-Query the Chroma DB.
-
-```python
+### Query Database
+```bash
 python query_data.py "How does Alice meet the Mad Hatter?"
 ```
 
-> You'll also need to set up an OpenAI account (and set the OpenAI key in your environment variable) for this to work.
+> You'll need an OpenAI API key in your `.env` file.
 
-Here is a step-by-step tutorial video: [RAG+Langchain Python Project: Easy AI/Chat For Your Docs](https://www.youtube.com/watch?v=tcqEUSNCn8I&ab_channel=pixegami).
+## 📖 Resources
+
+- **[Complete Learning Guide](README_LEARNING.md)** - Step-by-step 1-hour tutorial
+- **[n8n Documentation](https://docs.n8n.io/)** - Workflow automation
+- **[LangChain Docs](https://python.langchain.com/)** - RAG framework
+- **Tutorial Video**: [RAG+Langchain Python Project](https://www.youtube.com/watch?v=tcqEUSNCn8I)
+
+## 🤝 Contributing
+
+This project is designed for learning! Feel free to:
+- Improve the learning guide
+- Add more test cases
+- Create additional workflows
+- Enhance the RAG system
+
+## 📄 License
+
+MIT License - feel free to use this for learning and teaching.
