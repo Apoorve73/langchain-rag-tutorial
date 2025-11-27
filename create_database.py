@@ -22,7 +22,9 @@ DATA_PATH = "data/books"
 
 
 def main():
+    print("📚 Starting database creation...")
     generate_data_store()
+    print("✅ Database ready!")
 
 
 def generate_data_store():
@@ -39,17 +41,17 @@ def load_documents():
 
 def split_text(documents: list[Document]):
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=300,
-        chunk_overlap=100,
+        chunk_size=500,  # Increased for better context retention
+        chunk_overlap=150,  # More overlap to preserve context at boundaries
         length_function=len,
         add_start_index=True,
     )
     chunks = text_splitter.split_documents(documents)
-    print(f"Split {len(documents)} documents into {len(chunks)} chunks.")
-
-    document = chunks[10]
-    print(document.page_content)
-    print(document.metadata)
+    print(f"✂️  Split {len(documents)} document(s) into {len(chunks)} chunks.")
+    
+    # Show a sample chunk for verification
+    if len(chunks) > 10:
+        print(f"📄 Sample chunk preview: {chunks[10].page_content[:100]}...")
 
     return chunks
 
@@ -57,13 +59,15 @@ def split_text(documents: list[Document]):
 def save_to_chroma(chunks: list[Document]):
     # Clear out the database first.
     if os.path.exists(CHROMA_PATH):
+        print(f"🗑️  Clearing existing database at {CHROMA_PATH}...")
         shutil.rmtree(CHROMA_PATH)
 
     # Create a new DB from the documents.
+    print("🔢 Creating embeddings and storing in ChromaDB...")
     db = Chroma.from_documents(
         chunks, OpenAIEmbeddings(), persist_directory=CHROMA_PATH
     )
-    print(f"Saved {len(chunks)} chunks to {CHROMA_PATH}.")
+    print(f"💾 Saved {len(chunks)} chunks to {CHROMA_PATH}.")
 
 
 if __name__ == "__main__":

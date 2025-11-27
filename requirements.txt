@@ -13,5 +13,8 @@ chromadb==1.0.16 # Vector storage (updated for NumPy 2.0+ compatibility)
 openai==1.99.9 # For embeddings
 tiktoken==0.11.0  # For embeddings
 numpy==2.1.2 # Required for compatibility
+onnxruntime==1.23.2
+flask==3.1.0 # For RAG API server (n8n integration)
+requests==2.32.3 # For HTTP requests
 
 # install markdown depenendies with: `pip install "unstructured[md]"` after install the requirements file. Leave this line commented out. 
