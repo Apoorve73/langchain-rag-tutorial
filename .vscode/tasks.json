@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start n8n",
+      "type": "shell",
+      "command": "npx n8n",
+      "problemMatcher": [],
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Open n8n in Simple Browser",
+      "type": "shell",
+      "command": "sleep 3 && code --command 'simpleBrowser.show' 'http://localhost:5678'",
+      "dependsOn": "Start n8n",
+      "problemMatcher": []
+    }
+  ]
+}

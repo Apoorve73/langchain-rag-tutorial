@@ -1,0 +1,60 @@
+{
+  "name": "Basic RAG Chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful AI assistant with access to a knowledge base about Alice in Wonderland. Ask me anything about the book!"
+        }
+      },
+      "id": "chat-trigger",
+      "name": "Chat Trigger",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [100, 100]
+    },
+    {
+      "parameters": {
+        "command": "cd /path/to/your/project && python main.py --json \"{{ $json.chatInput }}\""
+      },
+      "id": "execute-rag",
+      "name": "Execute RAG Query",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [300, 100]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "response",
+              "value": "={{ $json.stdout }}"
+            }
+          ]
+        }
+      },
+      "id": "parse-json",
+      "name": "Parse JSON Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [500, 100]
+    },
+    {
+      "parameters": {
+        "respondWith": "={{ $json.response }}",
+        "options": {}
+      },
+      "id": "chat-response",
+      "name": "Chat Response",
+      "type": "@n8n/n8n-nodes-langchain.chatOpenAi",
+      "typeVersion": 1,
+      "position": [700, 100]
+    }
+  ],
+  "connections": {
+    "chat-trigger": { "main": [[{ "node": "execute-rag" }]] },
+    "execute-rag": { "main": [[{ "node": "parse-json" }]] },
+    "parse-json": { "main": [[{ "node": "chat-response" }]] }
+  }
+}

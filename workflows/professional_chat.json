@@ -1,0 +1,85 @@
+{
+  "name": "Professional RAG Chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful AI assistant with access to a knowledge base about Alice in Wonderland. I can help you explore the story, characters, and themes. What would you like to know?"
+        }
+      },
+      "id": "chat-trigger",
+      "name": "Professional Chat Interface",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [100, 100]
+    },
+    {
+      "parameters": {
+        "command": "cd /path/to/your/project && python streaming_rag.py stream \"{{ $json.chatInput }}\" \"{{ $json.conversationId }}\""
+      },
+      "id": "streaming-rag",
+      "name": "Streaming RAG Query",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [300, 100]
+    },
+    {
+      "parameters": {
+        "jsCode": "
+// Parse streaming output
+const output = $input.first().json.stdout;
+const lines = output.split('\\n');
+
+let response = '';
+let sources = [];
+let confidence = 0.0;
+let conversationId = '';
+
+for (const line of lines) {
+  try {
+    const data = JSON.parse(line);
+    if (data.type === 'response') response = data.content;
+    if (data.type === 'sources') sources = data.content;
+    if (data.type === 'confidence') confidence = data.content;
+    if (data.type === 'complete') conversationId = data.conversationId;
+  } catch (e) {
+    // Skip invalid JSON lines
+  }
+}
+
+return {
+  json: {
+    response: response,
+    sources: sources,
+    confidence: confidence,
+    conversationId: conversationId
+  }
+};",
+        "options": {}
+      },
+      "id": "process-stream",
+      "name": "Process Streaming Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [500, 100]
+    },
+    {
+      "parameters": {
+        "respondWith": "={{ $json.response }}\n\n📚 **Sources:** {{ $json.sources.join(', ') }}\n🎯 **Confidence:** {{ $json.confidence }}",
+        "options": {
+          "responseType": "streaming"
+        }
+      },
+      "id": "rich-response",
+      "name": "Rich Chat Response",
+      "type": "@n8n/n8n-nodes-langchain.chatOpenAi",
+      "typeVersion": 1,
+      "position": [700, 100]
+    }
+  ],
+  "connections": {
+    "chat-trigger": { "main": [[{ "node": "streaming-rag" }]] },
+    "streaming-rag": { "main": [[{ "node": "process-stream" }]] },
+    "process-stream": { "main": [[{ "node": "rich-response" }]] }
+  }
+}

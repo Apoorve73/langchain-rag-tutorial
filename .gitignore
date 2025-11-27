@@ -1,4 +1,34 @@
+# n8n
+.n8n/
+workflows/*.json
+!workflows/basic_rag.json
+!workflows/professional_chat.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Environment variables
 .env
-chroma_*
-chroma
+.env.local
+
+# IDE
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
 .DS_Store
+Thumbs.db
+
+# ChromaDB
+chroma/
