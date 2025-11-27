@@ -1,0 +1,120 @@
+{
+  "name": "RAG Chatbot - Alice in Wonderland",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "b24b05a7-d802-4413-bfb1-23e1e76f6203",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "webhookId": "a889d2ae-2159-402f-b326-5f61e90f602e"
+    },
+    {
+      "parameters": {
+        "content": "## RAG Chatbot\n\nThis workflow queries the Alice in Wonderland RAG pipeline.\n\nAsk questions about the book!",
+        "height": 120,
+        "width": 200
+      },
+      "id": "5592c045-6718-4c4e-9961-ce67a251b6df",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [40, 240]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "query",
+              "name": "query",
+              "value": "={{ $json.chatInput }}",
+              "type": "string"
+            },
+            {
+              "id": "sessionId",
+              "name": "sessionId",
+              "value": "={{ $json.sessionId || 'default' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-variables",
+      "name": "Set Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "command": "=python query_data.py \"{{ $json.query }}\" --session-id \"{{ $json.sessionId }}\" --save-memory"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "id": "7b0e2777-c675-4428-8ef7-56e4e1ea6fe1",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse JSON response from RAG pipeline\nconst output = $input.first().json.stdout;\n\ntry {\n  // Try to parse as JSON\n  const result = JSON.parse(output);\n  \n  // Format response for chat\n  let chatOutput = result.answer || \"I couldn't generate an answer.\";\n  \n  // Add sources if available\n  if (result.sources && result.sources.length > 0) {\n    const sourceNames = result.sources.map(s => {\n      // Extract filename from path\n      const parts = s.split('/');\n      return parts[parts.length - 1] || s;\n    }).join(', ');\n    chatOutput += `\\n\\n📚 Sources: ${sourceNames}`;\n  }\n  \n  // Handle errors\n  if (result.error) {\n    chatOutput = `⚠️ Error: ${result.error}`;\n  }\n  \n  return {\n    json: {\n      chatOutput: chatOutput,\n      answer: result.answer,\n      sources: result.sources || [],\n      confidence: result.confidence || 0,\n      error: result.error || null\n    }\n  };\n} catch (e) {\n  // If JSON parsing fails, try to extract meaningful error\n  const errorMsg = output.includes('Error') ? output : `Failed to parse response: ${e.message}`;\n  return {\n    json: {\n      chatOutput: `⚠️ Error: ${errorMsg}`,\n      answer: null,\n      sources: [],\n      confidence: 0,\n      error: errorMsg\n    }\n  };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300],
+      "id": "5aee133c-44a7-48c3-a54c-b6bf609c69d6",
+      "name": "Parse Response"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Variables": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "Parse Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "97514e46-5bcf-4199-b3e4-6d67a43b0315",
+  "meta": {
+    "instanceId": "678d6cc7c8696176abf72fc993c99b40094ad864df2c0a3b83be4601316473c8"
+  },
+  "id": "0qB84Q3OPyWxGAqm",
+  "tags": []
+}
