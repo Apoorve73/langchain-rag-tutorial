@@ -1,0 +1,114 @@
+{
+  "name": "RAG Chat: Ask Alice in Wonderland 🐰",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "title": "Ask about Alice in Wonderland 🐰",
+          "subtitle": "Powered by RAG + OpenAI"
+        }
+      },
+      "id": "chat-trigger-001",
+      "name": "Chat Input",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300],
+      "webhookId": "rag-chat-webhook-001"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:5000/query",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ question: $json.chatInput }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "http-request-001",
+      "name": "Query RAG API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format the RAG API response for chat display\nconst response = $input.first().json;\n\nlet output = response.response || 'No response received';\n\n// Add confidence indicator if available\nif (response.confidence && response.confidence > 0) {\n  const confidencePercent = Math.round(response.confidence * 100);\n  const emoji = confidencePercent >= 80 ? '🎯' : confidencePercent >= 60 ? '📊' : '🔍';\n  output += `\\n\\n${emoji} Confidence: ${confidencePercent}%`;\n}\n\n// Add source attribution\nif (response.sources && response.sources.length > 0) {\n  output += `\\n📖 Source: Alice in Wonderland`;\n}\n\n// Handle errors gracefully\nif (response.error) {\n  output = `⚠️ ${response.response}\\n\\nPlease try rephrasing your question or check if the RAG API is running.`;\n}\n\nreturn {\n  json: {\n    output: output\n  }\n};"
+      },
+      "id": "format-response-001",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [750, 300]
+    },
+    {
+      "parameters": {
+        "content": "## 🐰 Alice in Wonderland RAG Chat\n\n**How this workflow works:**\n\n1️⃣ **Chat Input** - Receives your question\n\n2️⃣ **Query RAG API** - Sends question to the Python RAG server\n\n3️⃣ **Format Response** - Beautifies the answer for display\n\n---\n\n**Try asking:**\n- \"Who is the Mad Hatter?\"\n- \"What happens at the tea party?\"\n- \"Describe the Cheshire Cat\"\n- \"How does Alice change size?\"\n\n---\n\n⚠️ **Before using:** Make sure `rag_api.py` is running!\n```\npython rag_api.py\n```",
+        "height": 450,
+        "width": 300
+      },
+      "id": "instructions-001",
+      "name": "Instructions",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-100, 150]
+    },
+    {
+      "parameters": {
+        "content": "## 🔧 Setup Checklist\n\n✅ Install Python dependencies\n✅ Set OPENAI_API_KEY in .env\n✅ Run `python create_database.py`\n✅ Run `python rag_api.py`\n✅ Test: http://localhost:5000/health",
+        "height": 200,
+        "width": 280
+      },
+      "id": "setup-checklist-001",
+      "name": "Setup Checklist",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-100, 620]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Chat Input": {
+      "main": [
+        [
+          {
+            "node": "Query RAG API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query RAG API": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateId": "rag-chat-alice-wonderland",
+    "instanceId": "custom-rag-workflow"
+  },
+  "tags": [
+    {
+      "name": "RAG"
+    },
+    {
+      "name": "AI"
+    },
+    {
+      "name": "Tutorial"
+    }
+  ]
+}
+
